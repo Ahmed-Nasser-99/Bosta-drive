@@ -1,97 +1,103 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useId, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import Modal from "@/components/ui/Modal";
 import { useFileSystem } from "../context/FileSystemProvider";
 import type { FileSystemAction, FSFileNode } from "../context/fileSystemTypes";
-import XIcon from "../../icons/XIcon";
-import { dismissIconButton } from "@/components/ui/styles";
-import { multilineInput, primaryButton, secondaryButton } from "./fileSystemStyles";
+import {
+  formLabel,
+  multilineInput,
+  primaryButton,
+  secondaryButton,
+} from "./fileSystemStyles";
 
-function EditorBody({
+type FormValues = { content: string };
+
+function EditorInner({
   fileNode,
   dispatch,
 }: {
   fileNode: FSFileNode;
   dispatch: React.Dispatch<FileSystemAction>;
 }) {
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const [draft, setDraft] = useState(fileNode.content);
+  const titleId = useId();
+  const formId = useId();
+  const contentFieldId = `${formId}-content`;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setFocus,
+    formState: { isSubmitting },
+  } = useForm<FormValues>({
+    defaultValues: { content: fileNode.content },
+    mode: "onChange",
+  });
 
   useEffect(() => {
-    const t = window.setTimeout(() => textareaRef.current?.focus(), 0);
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") dispatch({ type: "CLOSE_TEXT_EDITOR" });
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.clearTimeout(t);
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [dispatch]);
+    reset({ content: fileNode.content });
+  }, [fileNode.content, reset]);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setFocus("content"), 0);
+    return () => window.clearTimeout(t);
+  }, [setFocus]);
+
+  const handleClose = () => dispatch({ type: "CLOSE_TEXT_EDITOR" });
+
+  const onValid = (data: FormValues) => {
+    dispatch({
+      type: "SAVE_TEXT_FILE",
+      nodeId: fileNode.id,
+      content: data.content,
+    });
+  };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="presentation"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) {
-          dispatch({ type: "CLOSE_TEXT_EDITOR" });
-        }
-      }}
+    <Modal
+      open
+      onClose={handleClose}
+      panelClassName="max-w-3xl"
+      aria-labelledby={titleId}
     >
-      <div
-        className="w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-surface-2"
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Editing ${fileNode.name}`}
-      >
-        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-          <div className="min-w-0 text-sm font-semibold text-foreground">
-            {fileNode.name}
-          </div>
-          <button
-            type="button"
-            className={dismissIconButton}
-            onClick={() => dispatch({ type: "CLOSE_TEXT_EDITOR" })}
-            aria-label="Close"
-          >
-            <XIcon className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="px-4 py-3">
+      <Modal.Header>
+        <h2
+          id={titleId}
+          className="min-w-0 flex-1 truncate pr-2 text-sm font-semibold"
+        >
+          {fileNode.name}
+        </h2>
+      </Modal.Header>
+      <Modal.Body>
+        <form id={formId} onSubmit={handleSubmit(onValid)} noValidate>
+          <label htmlFor={contentFieldId} className={formLabel}>
+            Content
+          </label>
           <textarea
-            ref={textareaRef}
+            id={contentFieldId}
             className={multilineInput}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            {...register("content")}
           />
-        </div>
-
-        <div className="flex justify-end gap-2 border-t border-border px-4 py-3">
-          <button
-            type="button"
-            className={secondaryButton}
-            onClick={() => dispatch({ type: "CLOSE_TEXT_EDITOR" })}
-          >
+        </form>
+      </Modal.Body>
+      <Modal.Footer>
+        <div className="flex flex-wrap justify-end gap-2">
+          <button type="button" className={secondaryButton} onClick={handleClose}>
             Cancel
           </button>
           <button
-            type="button"
+            type="submit"
+            form={formId}
+            disabled={isSubmitting}
             className={primaryButton}
-            onClick={() => {
-              dispatch({
-                type: "SAVE_TEXT_FILE",
-                nodeId: fileNode.id,
-                content: draft,
-              });
-            }}
           >
             Save
           </button>
         </div>
-      </div>
-    </div>
+      </Modal.Footer>
+    </Modal>
   );
 }
 
@@ -108,5 +114,5 @@ export default function TextFileEditorModal() {
 
   if (!state.editor.open || !fileNode) return null;
 
-  return <EditorBody key={fileNode.id} fileNode={fileNode} dispatch={dispatch} />;
+  return <EditorInner key={fileNode.id} fileNode={fileNode} dispatch={dispatch} />;
 }

@@ -1,18 +1,17 @@
 "use client";
 
 import React from "react";
-import type { FSDirNode } from "../context/fileSystemTypes";
-import { useFileSystem } from "../context/FileSystemProvider";
-import FileSystemItemIcon from "./FileSystemItemIcon";
+import type { FSDirNode } from "../../context/fileSystemTypes";
+import { useFileSystem } from "../../context/FileSystemProvider";
+import { itemCardMeta, itemCardStack, itemCardTitle } from "../fileSystemStyles";
 import FileSystemItemCard from "./FileSystemItemCard";
-import { itemCardMeta, itemCardStack, itemCardTitle } from "./fileSystemStyles";
+import FileSystemItemIcon from "./FileSystemItemIcon";
 
 export default function FileSystemDirCard({ dir }: { dir: FSDirNode }) {
   const { state, dispatch } = useFileSystem();
   const selected = state.selectedNodeId === dir.id;
   const childCount = state.childrenByDirId[dir.id]?.length ?? 0;
-  const itemsLabel =
-    childCount === 1 ? "1 item" : `${childCount} items`;
+  const itemsLabel = childCount === 1 ? "1 item" : `${childCount} items`;
 
   return (
     <FileSystemItemCard

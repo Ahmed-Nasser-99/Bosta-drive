@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
-import type { FSFileNode } from "../context/fileSystemTypes";
-import { useFileSystem } from "../context/FileSystemProvider";
-import { formatFsItemDate } from "../utils";
-import FileSystemItemIcon from "./FileSystemItemIcon";
+import type { FSFileNode } from "../../context/fileSystemTypes";
+import { useFileSystem } from "../../context/FileSystemProvider";
+import { formatFsItemDate } from "../../utils";
+import { itemCardMeta, itemCardStack, itemCardTitle } from "../fileSystemStyles";
 import FileSystemItemCard from "./FileSystemItemCard";
-import { itemCardMeta, itemCardStack, itemCardTitle } from "./fileSystemStyles";
+import FileSystemItemIcon from "./FileSystemItemIcon";
 
 export default function FileSystemFileCard({ file }: { file: FSFileNode }) {
   const { state, dispatch } = useFileSystem();

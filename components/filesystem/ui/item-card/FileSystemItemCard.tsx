@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { itemCardClassName } from "./fileSystemStyles";
+import { itemCardClassName } from "../fileSystemStyles";
 
 type Props = {
   selected: boolean;

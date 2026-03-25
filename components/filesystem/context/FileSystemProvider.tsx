@@ -10,6 +10,7 @@ import React, {
 import type { FileSystemAction, FileSystemState } from "./fileSystemTypes";
 import { fileSystemReducer } from "./fileSystemReducer";
 import { createInitialFileSystemState } from "./initialState";
+import { migrateFileSystemState } from "./migrateFileSystemState";
 
 const STORAGE_KEY = "bosta_drive_fs";
 
@@ -26,7 +27,7 @@ export function safeParseState(raw: string): FileSystemState | null {
     if (!parsed || parsed.version !== 1) return null;
     if (!parsed.nodesById || !parsed.childrenByDirId) return null;
     if (!parsed.rootId || !parsed.currentDirId) return null;
-    return parsed;
+    return migrateFileSystemState(parsed);
   } catch {
     return null;
   }

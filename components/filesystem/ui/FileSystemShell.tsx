@@ -6,11 +6,10 @@ import type { FSDirNode, FSFileNode } from "../context/fileSystemTypes";
 import { buildDirPath } from "../utils";
 import FileSystemBreadcrumb from "./FileSystemBreadcrumb";
 import FileSystemEmptyState from "./FileSystemEmptyState";
-import FileSystemDirCard from "./FileSystemDirCard";
-import FileSystemFileCard from "./FileSystemFileCard";
-import TextFileEditorModal from "./TextFileEditorModal";
+import { FileSystemDirCard, FileSystemFileCard } from "./item-card";
 import CreateFsItemModal, { type CreateFsItemKind } from "./CreateFsItemModal";
 import { sectionLabel } from "./fileSystemStyles";
+import TextFileEditorModal from "./TextFileEditorModal";
 
 export default function FileSystemShell() {
   const { state, dispatch } = useFileSystem();

@@ -17,6 +17,7 @@ export function createInitialFileSystemState(): FileSystemState {
         type: "dir",
         name: "My Computer",
         parentId: null,
+        createdAt: 0,
         modifiedAt: 0,
       },
     },

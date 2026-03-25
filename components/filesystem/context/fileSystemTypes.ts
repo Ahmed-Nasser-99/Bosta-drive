@@ -8,6 +8,8 @@ type BaseNode = {
   id: string;
   name: string;
   parentId: string | null;
+  /** Creation time (ms). Backfilled from modifiedAt when loading older saved state. */
+  createdAt: number;
   modifiedAt: number;
 };
 
@@ -39,4 +41,6 @@ export type FileSystemAction =
   | { type: "CLOSE_TEXT_EDITOR" }
   | { type: "SAVE_TEXT_FILE"; nodeId: string; content: string }
   | { type: "ADD_FOLDER"; parentDirId: string; name: string }
-  | { type: "ADD_TEXT_FILE"; parentDirId: string; name: string };
+  | { type: "ADD_TEXT_FILE"; parentDirId: string; name: string }
+  | { type: "RENAME_NODE"; nodeId: string; newName: string }
+  | { type: "DELETE_NODE"; nodeId: string };

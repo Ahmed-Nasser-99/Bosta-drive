@@ -9,16 +9,16 @@ export function itemCardClassName(selected: boolean) {
   return `${itemCardBase} ${selected ? itemCardSelected : itemCardDefault}`;
 }
 
-export const sectionLabel = "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
+export const sectionLabel =
+  "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
 
-export const breadcrumbNavButton = `rounded-lg px-2 py-1 hover:bg-surface-2 ${focusRing}`;
+export const breadcrumbNavButton = `rounded-lg px-2 py-1 hover:bg-black/10 dark:hover:bg-white/10 ${focusRing}`;
 
 /** Vertical stack: icon top-left, title + meta below (matches file browser cards). */
 export const itemCardStack =
   "flex w-full min-w-0 flex-col items-start gap-2 text-left";
 
-export const itemCardTitle =
-  "truncate font-semibold text-foreground";
+export const itemCardTitle = "truncate font-semibold text-foreground";
 
 export const itemCardMeta = "text-xs text-muted-foreground";
 
@@ -34,6 +34,11 @@ export const secondaryButton =
 export const primaryButton =
   "rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-95";
 
+export const dangerButton =
+  "rounded-xl bg-bosta-red-700 px-4 py-2 text-sm font-semibold text-white hover:opacity-95";
+
+export const panelIconButton = `inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-surface text-muted-foreground transition hover:bg-surface-2 hover:text-foreground disabled:pointer-events-none disabled:opacity-40 ${focusRing}`;
+
 export const textInput =
   "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary";
 
@@ -42,4 +47,5 @@ export const formLabel =
 
 export const fieldError = "mt-1.5 text-sm text-primary";
 
-export const emptyStateActions = "mt-6 flex flex-wrap items-center justify-center gap-3";
+export const emptyStateActions =
+  "mt-6 flex flex-wrap items-center justify-center gap-3";

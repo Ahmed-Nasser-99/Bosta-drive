@@ -1,4 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
+import {
+  collectSubtreeIds,
+  nameExistsAmongSiblings,
+  resolveCurrentDirAfterDelete,
+} from "../utils";
 import type {
   FileSystemAction,
   FileSystemState,
@@ -6,6 +11,7 @@ import type {
   FSFileNode,
   FSNode,
 } from "./fileSystemTypes";
+import { migrateFileSystemState } from "./migrateFileSystemState";
 
 function isFile(node: FSNode): node is FSFileNode {
   return node.type === "file";
@@ -17,7 +23,7 @@ export function fileSystemReducer(
 ): FileSystemState {
   switch (action.type) {
     case "HYDRATE_STATE":
-      return action.state;
+      return migrateFileSystemState(action.state);
 
     case "NAVIGATE_TO_DIR": {
       const node = state.nodesById[action.dirId];
@@ -73,6 +79,7 @@ export function fileSystemReducer(
         type: "dir",
         name,
         parentId: action.parentDirId,
+        createdAt: now,
         modifiedAt: now,
       };
       const siblings = state.childrenByDirId[action.parentDirId] ?? [];
@@ -103,6 +110,7 @@ export function fileSystemReducer(
         name,
         parentId: action.parentDirId,
         content: "",
+        createdAt: now,
         modifiedAt: now,
       };
       const siblings = state.childrenByDirId[action.parentDirId] ?? [];
@@ -115,6 +123,65 @@ export function fileSystemReducer(
         },
         selectedNodeId: id,
         editor: { open: false, nodeId: null },
+      };
+    }
+
+    case "RENAME_NODE": {
+      const node = state.nodesById[action.nodeId];
+      if (!node || !node.parentId || action.nodeId === state.rootId)
+        return state;
+      const name = action.newName.trim();
+      if (!name) return state;
+      if (
+        nameExistsAmongSiblings(
+          state.nodesById,
+          state.childrenByDirId,
+          node.parentId,
+          name,
+          action.nodeId
+        )
+      ) {
+        return state;
+      }
+      const now = Date.now();
+      const updated = { ...node, name, modifiedAt: now } as FSNode;
+      return {
+        ...state,
+        nodesById: { ...state.nodesById, [action.nodeId]: updated },
+      };
+    }
+
+    case "DELETE_NODE": {
+      const node = state.nodesById[action.nodeId];
+      if (!node || action.nodeId === state.rootId) return state;
+      const deleted = collectSubtreeIds(state, action.nodeId);
+      const nextCurrentDirId = resolveCurrentDirAfterDelete(state, deleted);
+      const nodesById = { ...state.nodesById };
+      for (const id of deleted) {
+        delete nodesById[id];
+      }
+      const childrenByDirId: Record<string, string[]> = {};
+      for (const key of Object.keys(state.childrenByDirId)) {
+        if (deleted.has(key)) continue;
+        childrenByDirId[key] = (state.childrenByDirId[key] ?? []).filter(
+          (id) => !deleted.has(id)
+        );
+      }
+      const selectedNodeId =
+        state.selectedNodeId && deleted.has(state.selectedNodeId)
+          ? null
+          : state.selectedNodeId;
+      const editor =
+        state.editor.nodeId && deleted.has(state.editor.nodeId)
+          ? { open: false, nodeId: null }
+          : state.editor;
+      return {
+        ...state,
+        nodesById,
+        childrenByDirId,
+        currentDirId: nextCurrentDirId,
+        selectedNodeId,
+        editor,
       };
     }
 

@@ -96,9 +96,8 @@ function ModalRoot({
         aria-modal="true"
         aria-labelledby={ariaLabelledBy}
         aria-label={ariaLabel}
-        onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="absolute right-5 top-5 z-1 box-border flex justify-end">
+        <div className="absolute right-2 top-2 z-1 box-border flex justify-end">
           <button
             type="button"
             className={dismissIconButton}
