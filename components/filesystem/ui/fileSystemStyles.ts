@@ -1,0 +1,45 @@
+import { focusRing } from "@/components/ui/styles";
+
+const itemCardBase = `rounded-2xl border p-4 text-left shadow-sm transition ${focusRing}`;
+
+const itemCardSelected = "border-primary bg-bosta-red-50";
+const itemCardDefault = "border-border bg-surface-2 hover:bg-surface";
+
+export function itemCardClassName(selected: boolean) {
+  return `${itemCardBase} ${selected ? itemCardSelected : itemCardDefault}`;
+}
+
+export const sectionLabel = "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
+
+export const breadcrumbNavButton = `rounded-lg px-2 py-1 hover:bg-surface-2 ${focusRing}`;
+
+/** Vertical stack: icon top-left, title + meta below (matches file browser cards). */
+export const itemCardStack =
+  "flex w-full min-w-0 flex-col items-start gap-2 text-left";
+
+export const itemCardTitle =
+  "truncate font-semibold text-foreground";
+
+export const itemCardMeta = "text-xs text-muted-foreground";
+
+export const multilineInput =
+  "min-h-[40vh] w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary";
+
+export const ghostButton =
+  "rounded-lg px-2 py-1 text-sm text-muted-foreground hover:bg-surface";
+
+export const secondaryButton =
+  "rounded-xl border border-border bg-surface px-4 py-2 text-sm text-foreground hover:bg-surface-2";
+
+export const primaryButton =
+  "rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-95";
+
+export const textInput =
+  "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary";
+
+export const formLabel =
+  "mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground";
+
+export const fieldError = "mt-1.5 text-sm text-primary";
+
+export const emptyStateActions = "mt-6 flex flex-wrap items-center justify-center gap-3";

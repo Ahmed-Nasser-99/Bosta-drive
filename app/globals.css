@@ -1,22 +1,52 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #f6f6f6;
+  --surface-2: #ffffff;
+  --border: rgba(23, 23, 23, 0.12);
+  --muted-foreground: rgba(23, 23, 23, 0.68);
+
+  --bosta-red-50: #FDE6E7;
+  --bosta-red-200: #F8B1B5;
+  --bosta-red-500: #E30613;
+  --bosta-red-700: #A8040E;
+
+  color-scheme: light;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --surface: #121212;
+  --surface-2: #181818;
+  --border: rgba(237, 237, 237, 0.14);
+  --muted-foreground: rgba(237, 237, 237, 0.66);
+
+  --bosta-red-50: rgba(227, 6, 19, 0.12);
+
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-primary: var(--bosta-red-500);
+  --color-bosta-red-50: var(--bosta-red-50);
+  --color-bosta-red-200: var(--bosta-red-200);
+  --color-bosta-red-500: var(--bosta-red-500);
+  --color-bosta-red-700: var(--bosta-red-700);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
