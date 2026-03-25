@@ -4,7 +4,11 @@ import React from "react";
 import type { FSDirNode } from "../../context/fileSystemTypes";
 import { useFileSystem } from "../../context/FileSystemProvider";
 import { useNavigateToFolder } from "../../useNavigateToFolder";
-import { itemCardMeta, itemCardStack, itemCardTitle } from "../fileSystemStyles";
+import {
+  itemCardMeta,
+  itemCardStack,
+  itemCardTitle,
+} from "../fileSystemStyles";
 import FileSystemItemCard from "./FileSystemItemCard";
 import FileSystemItemIcon from "./FileSystemItemIcon";
 

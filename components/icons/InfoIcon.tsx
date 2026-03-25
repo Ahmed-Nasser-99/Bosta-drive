@@ -1,14 +1,14 @@
-import React from "react";
+interface InfoIconProps {
+  className?: string;
+}
 
-export default function InfoIcon(props: React.SVGProps<SVGSVGElement>) {
+export default function InfoIcon({ className = "h-5 w-5" }: InfoIconProps) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
+      className={className}
       viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      {...props}
+      fill="currentColor"
+      aria-hidden="true"
     >
       <path
         strokeLinecap="round"

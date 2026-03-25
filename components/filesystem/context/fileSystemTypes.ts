@@ -33,6 +33,13 @@ export type FileSystemState = {
   childrenByDirId: Record<string, string[]>;
 };
 
+export type ClipboardOp = "copy" | "cut";
+
+export type Clipboard = {
+  op: ClipboardOp;
+  nodeIds: string[];
+} | null;
+
 export type FileSystemAction =
   | { type: "HYDRATE_STATE"; state: FileSystemState }
   | { type: "NAVIGATE_TO_DIR"; dirId: string }
@@ -43,4 +50,5 @@ export type FileSystemAction =
   | { type: "ADD_FOLDER"; parentDirId: string; name: string }
   | { type: "ADD_TEXT_FILE"; parentDirId: string; name: string }
   | { type: "RENAME_NODE"; nodeId: string; newName: string }
-  | { type: "DELETE_NODE"; nodeId: string };
+  | { type: "DELETE_NODE"; nodeId: string }
+  | { type: "PASTE_NODES"; op: ClipboardOp; nodeIds: string[]; targetDirId: string };

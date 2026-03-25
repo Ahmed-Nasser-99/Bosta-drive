@@ -17,6 +17,60 @@ function isFile(node: FSNode): node is FSFileNode {
   return node.type === "file";
 }
 
+function deduplicateName(
+  nodesById: Record<string, FSNode>,
+  childrenByDirId: Record<string, string[]>,
+  parentDirId: string,
+  name: string,
+  excludeNodeId?: string
+): string {
+  if (!nameExistsAmongSiblings(nodesById, childrenByDirId, parentDirId, name, excludeNodeId))
+    return name;
+  const ext = name.lastIndexOf(".");
+  const base = ext > 0 ? name.slice(0, ext) : name;
+  const suffix = ext > 0 ? name.slice(ext) : "";
+  let i = 2;
+  let candidate: string;
+  do {
+    candidate = `${base} (${i})${suffix}`;
+    i++;
+  } while (nameExistsAmongSiblings(nodesById, childrenByDirId, parentDirId, candidate, excludeNodeId));
+  return candidate;
+}
+
+/** Deep-clone a subtree, assigning new IDs and re-parenting the root clone. */
+function cloneSubtree(
+  state: FileSystemState,
+  sourceId: string,
+  newParentId: string
+): { nodesById: Record<string, FSNode>; childrenByDirId: Record<string, string[]>; rootCloneId: string } {
+  const nodesById: Record<string, FSNode> = {};
+  const childrenByDirId: Record<string, string[]> = {};
+  const now = Date.now();
+
+  function walk(id: string, parentId: string): string {
+    const original = state.nodesById[id];
+    if (!original) return "";
+    const newId = uuidv4();
+    if (original.type === "dir") {
+      nodesById[newId] = { ...original, id: newId, parentId, createdAt: now, modifiedAt: now };
+      const srcChildren = state.childrenByDirId[id] ?? [];
+      const newChildren: string[] = [];
+      for (const childId of srcChildren) {
+        const clonedChildId = walk(childId, newId);
+        if (clonedChildId) newChildren.push(clonedChildId);
+      }
+      childrenByDirId[newId] = newChildren;
+    } else {
+      nodesById[newId] = { ...original, id: newId, parentId, createdAt: now, modifiedAt: now };
+    }
+    return newId;
+  }
+
+  const rootCloneId = walk(sourceId, newParentId);
+  return { nodesById, childrenByDirId, rootCloneId };
+}
+
 export function fileSystemReducer(
   state: FileSystemState,
   action: FileSystemAction
@@ -183,6 +237,99 @@ export function fileSystemReducer(
         selectedNodeId,
         editor,
       };
+    }
+
+    case "PASTE_NODES": {
+      const targetDir = state.nodesById[action.targetDirId];
+      if (!targetDir || targetDir.type !== "dir") return state;
+
+      let next = { ...state };
+      let nextNodesById = { ...state.nodesById };
+      let nextChildrenByDirId = { ...state.childrenByDirId };
+
+      for (const srcId of action.nodeIds) {
+        const srcNode = nextNodesById[srcId];
+        if (!srcNode) continue;
+
+        if (action.op === "cut") {
+          if (srcId === state.rootId) continue;
+          // Prevent moving a folder into itself or its descendants
+          if (srcNode.type === "dir") {
+            const subtree = collectSubtreeIds(
+              { ...next, nodesById: nextNodesById, childrenByDirId: nextChildrenByDirId },
+              srcId
+            );
+            if (subtree.has(action.targetDirId)) continue;
+          }
+          // Already in target? Skip.
+          if (srcNode.parentId === action.targetDirId) continue;
+
+          // Remove from old parent
+          const oldParentId = srcNode.parentId;
+          if (oldParentId) {
+            nextChildrenByDirId = {
+              ...nextChildrenByDirId,
+              [oldParentId]: (nextChildrenByDirId[oldParentId] ?? []).filter(
+                (id) => id !== srcId
+              ),
+            };
+          }
+
+          const name = deduplicateName(
+            nextNodesById,
+            nextChildrenByDirId,
+            action.targetDirId,
+            srcNode.name,
+            srcId
+          );
+          nextNodesById = {
+            ...nextNodesById,
+            [srcId]: { ...srcNode, parentId: action.targetDirId, name, modifiedAt: Date.now() } as FSNode,
+          };
+          nextChildrenByDirId = {
+            ...nextChildrenByDirId,
+            [action.targetDirId]: [
+              ...(nextChildrenByDirId[action.targetDirId] ?? []),
+              srcId,
+            ],
+          };
+        } else {
+          // Copy: deep-clone the subtree
+          const { nodesById: clonedNodes, childrenByDirId: clonedChildren, rootCloneId } =
+            cloneSubtree(
+              { ...next, nodesById: nextNodesById, childrenByDirId: nextChildrenByDirId },
+              srcId,
+              action.targetDirId
+            );
+          if (!rootCloneId) continue;
+
+          const name = deduplicateName(
+            { ...nextNodesById, ...clonedNodes },
+            { ...nextChildrenByDirId, ...clonedChildren },
+            action.targetDirId,
+            clonedNodes[rootCloneId].name,
+            rootCloneId
+          );
+          clonedNodes[rootCloneId] = { ...clonedNodes[rootCloneId], name } as FSNode;
+
+          nextNodesById = { ...nextNodesById, ...clonedNodes };
+          nextChildrenByDirId = {
+            ...nextChildrenByDirId,
+            ...clonedChildren,
+            [action.targetDirId]: [
+              ...(nextChildrenByDirId[action.targetDirId] ?? []),
+              rootCloneId,
+            ],
+          };
+        }
+      }
+
+      next = {
+        ...next,
+        nodesById: nextNodesById,
+        childrenByDirId: nextChildrenByDirId,
+      };
+      return next;
     }
 
     default:

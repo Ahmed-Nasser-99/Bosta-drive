@@ -4,6 +4,7 @@ import React, { useCallback, useRef } from "react";
 import EllipsisVerticalIcon from "@/components/icons/EllipsisVerticalIcon";
 import { focusRing } from "@/components/ui/styles";
 import { itemCardClassName } from "../fileSystemStyles";
+import { useFileSystem } from "../../context/FileSystemProvider";
 
 const DOUBLE_TAP_MS = 350;
 
@@ -25,6 +26,8 @@ export default function FileSystemItemCard({
   children,
 }: Props) {
   const lastTapRef = useRef(0);
+  const { clipboard } = useFileSystem();
+  const isCut = clipboard?.nodeIds.includes(nodeId);
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -50,7 +53,10 @@ export default function FileSystemItemCard({
   );
 
   return (
-    <div className="group/card relative" data-node-id={nodeId}>
+    <div
+      className={`group/card relative${isCut ? " opacity-50" : ""}`}
+      data-node-id={nodeId}
+    >
       <button
         type="button"
         className={`${itemCardClassName(selected)} w-full`}

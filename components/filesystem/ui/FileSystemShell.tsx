@@ -3,13 +3,17 @@
 import React, { Dispatch, useCallback, useMemo, useState } from "react";
 import AddDocumentIcon from "@/components/icons/AddDocumentIcon";
 import AddFolderIcon from "@/components/icons/AddFolderIcon";
+import CopyIcon from "@/components/icons/CopyIcon";
+import CutIcon from "@/components/icons/CutIcon";
 import FolderIcon from "@/components/icons/FolderIcon";
 import FileIcon from "@/components/icons/FileIcon";
 import InfoIcon from "@/components/icons/InfoIcon";
+import PasteIcon from "@/components/icons/PasteIcon";
 import RenameIcon from "@/components/icons/RenameIcon";
 import TrashIcon from "@/components/icons/TrashIcon";
 import { useFileSystem } from "../context/FileSystemProvider";
 import type {
+  Clipboard,
   FileSystemAction,
   FSDirNode,
   FSFileNode,
@@ -35,9 +39,12 @@ const CREATE_FOLDER: NameModalMode = { action: "create", kind: "folder" };
 const CREATE_FILE: NameModalMode = { action: "create", kind: "file" };
 
 function buildBackgroundMenuItems(
-  setNameModal: (mode: NameModalMode) => void
+  setNameModal: (mode: NameModalMode) => void,
+  clipboard: Clipboard,
+  onPaste: (targetDirId: string) => void,
+  currentDirId: string,
 ): ContextMenuItem[] {
-  return [
+  const items: ContextMenuItem[] = [
     {
       label: "New folder",
       icon: <AddFolderIcon className="h-4 w-4" />,
@@ -49,6 +56,16 @@ function buildBackgroundMenuItems(
       onClick: () => setNameModal(CREATE_FILE),
     },
   ];
+
+  if (clipboard) {
+    items.push({
+      label: "Paste",
+      icon: <PasteIcon className="h-4 w-4" />,
+      onClick: () => onPaste(currentDirId),
+    });
+  }
+
+  return items;
 }
 
 function buildNodeMenuItems(
@@ -57,9 +74,13 @@ function buildNodeMenuItems(
   dispatch: Dispatch<FileSystemAction>,
   setNameModal: (mode: NameModalMode) => void,
   setDeleteId: (id: string) => void,
-  setDetailsId: (id: string) => void
+  setDetailsId: (id: string) => void,
+  onCopy: (nodeId: string) => void,
+  onCut: (nodeId: string) => void,
+  clipboard: Clipboard,
+  onPaste: (targetDirId: string) => void,
 ): ContextMenuItem[] {
-  return [
+  const items: ContextMenuItem[] = [
     {
       label: node.type === "dir" ? "Open folder" : "Open file",
       icon:
@@ -83,6 +104,27 @@ function buildNodeMenuItems(
       className: "lg:hidden",
     },
     {
+      label: "Copy",
+      icon: <CopyIcon className="h-4 w-4" />,
+      onClick: () => onCopy(node.id),
+    },
+    {
+      label: "Cut",
+      icon: <CutIcon className="h-4 w-4" />,
+      onClick: () => onCut(node.id),
+    },
+  ];
+
+  if (node.type === "dir" && clipboard) {
+    items.push({
+      label: "Paste",
+      icon: <PasteIcon className="h-4 w-4" />,
+      onClick: () => onPaste(node.id),
+    });
+  }
+
+  items.push(
+    {
       label: "Rename",
       icon: <RenameIcon className="h-4 w-4" />,
       onClick: () => setNameModal({ action: "rename", nodeId: node.id }),
@@ -93,11 +135,14 @@ function buildNodeMenuItems(
       danger: true,
       onClick: () => setDeleteId(node.id),
     },
-  ];
+  );
+
+  return items;
 }
 
 export default function FileSystemShell() {
-  const { state, dispatch } = useFileSystem();
+  const { state, dispatch, clipboard, setClipboard, clearClipboard } =
+    useFileSystem();
   const navigateToFolder = useNavigateToFolder();
   const [nameModal, setNameModal] = useState<NameModalMode | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -107,7 +152,7 @@ export default function FileSystemShell() {
 
   const path = useMemo(
     () => buildDirPath(state.nodesById, state.currentDirId),
-    [state.nodesById, state.currentDirId]
+    [state.nodesById, state.currentDirId],
   );
 
   const ids = state.childrenByDirId[state.currentDirId] ?? [];
@@ -123,7 +168,7 @@ export default function FileSystemShell() {
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
       const nodeEl = (e.target as HTMLElement).closest<HTMLElement>(
-        "[data-node-id]"
+        "[data-node-id]",
       );
       if (nodeEl) {
         const nodeId = nodeEl.getAttribute("data-node-id")!;
@@ -133,7 +178,7 @@ export default function FileSystemShell() {
         openMenu(e, { kind: "background" });
       }
     },
-    [openMenu, dispatch]
+    [openMenu, dispatch],
   );
 
   const handleCardMenuOpen = useCallback(
@@ -148,14 +193,43 @@ export default function FileSystemShell() {
       } as React.MouseEvent;
       openMenu(syntheticEvent, { kind: "item", nodeId });
     },
-    [openMenu, dispatch]
+    [openMenu, dispatch],
+  );
+
+  const handleCopy = useCallback(
+    (nodeId: string) => setClipboard([nodeId], "copy"),
+    [setClipboard],
+  );
+
+  const handleCut = useCallback(
+    (nodeId: string) => setClipboard([nodeId], "cut"),
+    [setClipboard],
+  );
+
+  const handlePaste = useCallback(
+    (targetDirId: string) => {
+      if (!clipboard) return;
+      dispatch({
+        type: "PASTE_NODES",
+        op: clipboard.op,
+        nodeIds: clipboard.nodeIds,
+        targetDirId,
+      });
+      if (clipboard.op === "cut") clearClipboard();
+    },
+    [clipboard, dispatch, clearClipboard],
   );
 
   const contextMenuItems = useMemo((): ContextMenuItem[] => {
     if (!menu.open) return [];
 
     if (menu.target.kind === "background") {
-      return buildBackgroundMenuItems(setNameModal);
+      return buildBackgroundMenuItems(
+        setNameModal,
+        clipboard,
+        handlePaste,
+        state.currentDirId,
+      );
     }
 
     const node = state.nodesById[menu.target.nodeId];
@@ -167,9 +241,23 @@ export default function FileSystemShell() {
       dispatch,
       setNameModal,
       setDeleteId,
-      setDetailsId
+      setDetailsId,
+      handleCopy,
+      handleCut,
+      clipboard,
+      handlePaste,
     );
-  }, [menu, state.nodesById, navigateToFolder, dispatch]);
+  }, [
+    menu,
+    state.nodesById,
+    state.currentDirId,
+    navigateToFolder,
+    dispatch,
+    clipboard,
+    handleCopy,
+    handleCut,
+    handlePaste,
+  ]);
 
   return (
     <div

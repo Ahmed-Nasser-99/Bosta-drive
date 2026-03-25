@@ -1,10 +1,13 @@
 "use client";
 
-import React from "react";
 import type { FSFileNode } from "../../context/fileSystemTypes";
 import { useFileSystem } from "../../context/FileSystemProvider";
 import { formatFsItemDate } from "../../utils";
-import { itemCardMeta, itemCardStack, itemCardTitle } from "../fileSystemStyles";
+import {
+  itemCardMeta,
+  itemCardStack,
+  itemCardTitle,
+} from "../fileSystemStyles";
 import FileSystemItemCard from "./FileSystemItemCard";
 import FileSystemItemIcon from "./FileSystemItemIcon";
 
@@ -35,7 +38,9 @@ export default function FileSystemFileCard({ file, onMenuOpen }: Props) {
         <FileSystemItemIcon kind="file" />
         <div className="w-full min-w-0">
           <div className={itemCardTitle}>{file.name}</div>
-          <div className={itemCardMeta}>{formatFsItemDate(file.modifiedAt)}</div>
+          <div className={itemCardMeta}>
+            {formatFsItemDate(file.modifiedAt)}
+          </div>
         </div>
       </div>
     </FileSystemItemCard>

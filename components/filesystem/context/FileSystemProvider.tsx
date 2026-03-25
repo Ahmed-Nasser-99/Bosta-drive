@@ -2,12 +2,19 @@
 
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useReducer,
   useRef,
+  useState,
 } from "react";
-import type { FileSystemAction, FileSystemState } from "./fileSystemTypes";
+import type {
+  Clipboard,
+  ClipboardOp,
+  FileSystemAction,
+  FileSystemState,
+} from "./fileSystemTypes";
 import { fileSystemReducer } from "./fileSystemReducer";
 import { createInitialFileSystemState } from "./initialState";
 import { migrateFileSystemState } from "./migrateFileSystemState";
@@ -17,6 +24,9 @@ const STORAGE_KEY = "bosta_drive_fs";
 type CtxValue = {
   state: FileSystemState;
   dispatch: React.Dispatch<FileSystemAction>;
+  clipboard: Clipboard;
+  setClipboard: (nodeIds: string[], op: ClipboardOp) => void;
+  clearClipboard: () => void;
 };
 
 const FileSystemContext = createContext<CtxValue | null>(null);
@@ -42,7 +52,15 @@ export function FileSystemProvider({
     fileSystemReducer,
     createInitialFileSystemState(),
   );
+  const [clipboard, setClipboardRaw] = useState<Clipboard>(null);
   const skipNextPersist = useRef(false);
+
+  const setClipboard = useCallback(
+    (nodeIds: string[], op: ClipboardOp) =>
+      setClipboardRaw({ op, nodeIds }),
+    []
+  );
+  const clearClipboard = useCallback(() => setClipboardRaw(null), []);
 
   useEffect(() => {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -62,7 +80,7 @@ export function FileSystemProvider({
   }, [state]);
 
   return (
-    <FileSystemContext.Provider value={{ state, dispatch }}>
+    <FileSystemContext.Provider value={{ state, dispatch, clipboard, setClipboard, clearClipboard }}>
       {children}
     </FileSystemContext.Provider>
   );
