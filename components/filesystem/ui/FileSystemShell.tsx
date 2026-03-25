@@ -7,6 +7,7 @@ import { buildDirPath } from "../utils";
 import FileSystemBreadcrumb from "./FileSystemBreadcrumb";
 import FileSystemEmptyState from "./FileSystemEmptyState";
 import { FileSystemDirCard, FileSystemFileCard } from "./item-card";
+import CreateItemFab from "./CreateItemFab";
 import CreateFsItemModal, { type CreateFsItemKind } from "./CreateFsItemModal";
 import { sectionLabel } from "./fileSystemStyles";
 import TextFileEditorModal from "./TextFileEditorModal";
@@ -74,6 +75,7 @@ export default function FileSystemShell() {
         </>
       )}
 
+      <CreateItemFab onChoose={setCreateKind} />
       <TextFileEditorModal />
       <CreateFsItemModal
         open={createKind !== null}

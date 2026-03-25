@@ -49,3 +49,13 @@ export const fieldError = "mt-1.5 text-sm text-primary";
 
 export const emptyStateActions =
   "mt-6 flex flex-wrap items-center justify-center gap-3";
+
+export const fabRound =
+  "flex shrink-0 items-center justify-center rounded-full shadow-lg transition";
+
+export const subFab = `${fabRound} h-12 w-12 bg-surface-2 text-bosta-red-500 ring-1 ring-border hover:bg-bosta-red-50 dark:hover:bg-bosta-red-50/10 ${focusRing}`;
+
+export const mainFab = `${fabRound} h-14 w-14 bg-primary text-white shadow-lg shadow-primary/25 hover:opacity-95 ${focusRing}`;
+
+export const actionStackBase =
+  "flex flex-col items-end gap-2 transition-all duration-200 ease-out";
