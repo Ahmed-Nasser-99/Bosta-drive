@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useFileSystem } from "../../context/FileSystemProvider";
 import { useNavigateToFolder } from "../../useNavigateToFolder";
 import { buildNodeDisplayPath, countDirContents } from "../../utils";
+import NameFsItemModal, { type NameModalMode } from "../NameFsItemModal";
 import DeleteFsItemConfirmModal from "./DeleteFsItemConfirmModal";
 import InspectorActionBar from "./InspectorActionBar";
 import InspectorEmptyState from "./InspectorEmptyState";
@@ -12,12 +13,11 @@ import InspectorItemHeader from "./InspectorItemHeader";
 import InspectorMetadataSection from "./InspectorMetadataSection";
 import InspectorPanelHeader from "./InspectorPanelHeader";
 import { isFsFileNode } from "./nodeGuards";
-import RenameFsItemModal from "./RenameFsItemModal";
 
 export default function FileSystemInspectorPanel() {
   const { state, dispatch } = useFileSystem();
   const navigateToFolder = useNavigateToFolder();
-  const [renameId, setRenameId] = useState<string | null>(null);
+  const [nameModal, setNameModal] = useState<NameModalMode | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const selected = useMemo(() => {
@@ -35,9 +35,6 @@ export default function FileSystemInspectorPanel() {
     if (!selected || selected.type !== "dir") return null;
     return countDirContents(state, selected.id);
   }, [selected, state]);
-
-  const canMutate =
-    selected && selected.id !== state.rootId && selected.parentId !== null;
 
   const handleOpen = () => {
     if (!selected) return;
@@ -76,9 +73,10 @@ export default function FileSystemInspectorPanel() {
 
               <InspectorActionBar
                 node={selected}
-                canMutate={Boolean(canMutate)}
                 onOpen={handleOpen}
-                onRename={() => setRenameId(selected.id)}
+                onRename={() =>
+                  setNameModal({ action: "rename", nodeId: selected.id })
+                }
                 onDelete={() => setDeleteId(selected.id)}
               />
             </div>
@@ -86,10 +84,10 @@ export default function FileSystemInspectorPanel() {
         </div>
       </aside>
 
-      <RenameFsItemModal
-        open={renameId !== null}
-        nodeId={renameId}
-        onClose={() => setRenameId(null)}
+      <NameFsItemModal
+        open={nameModal !== null}
+        mode={nameModal ?? { action: "create", kind: "folder" }}
+        onClose={() => setNameModal(null)}
       />
       <DeleteFsItemConfirmModal
         open={deleteId !== null}

@@ -7,7 +7,6 @@ import { panelIconButton, primaryButton } from "../fileSystemStyles";
 
 type Props = {
   node: FSNode;
-  canMutate: boolean;
   onOpen: () => void;
   onRename: () => void;
   onDelete: () => void;
@@ -15,7 +14,6 @@ type Props = {
 
 export default function InspectorActionBar({
   node,
-  canMutate,
   onOpen,
   onRename,
   onDelete,
@@ -33,20 +31,18 @@ export default function InspectorActionBar({
         <button
           type="button"
           className={panelIconButton}
-          disabled={!canMutate}
           title="Rename"
           aria-label="Rename"
-          onClick={() => canMutate && onRename()}
+          onClick={onRename}
         >
           <RenameIcon className="h-5 w-5" />
         </button>
         <button
           type="button"
           className={panelIconButton}
-          disabled={!canMutate}
           title="Delete"
           aria-label="Delete"
-          onClick={() => canMutate && onDelete()}
+          onClick={onDelete}
         >
           <TrashIcon className="h-5 w-5" />
         </button>

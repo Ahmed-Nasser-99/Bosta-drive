@@ -14,6 +14,7 @@ export default function FileSystemFileCard({ file }: { file: FSFileNode }) {
 
   return (
     <FileSystemItemCard
+      nodeId={file.id}
       selected={selected}
       onClick={(e) => {
         e.stopPropagation();

@@ -17,6 +17,7 @@ export default function FileSystemDirCard({ dir }: { dir: FSDirNode }) {
 
   return (
     <FileSystemItemCard
+      nodeId={dir.id}
       selected={selected}
       onClick={(e) => {
         e.stopPropagation();

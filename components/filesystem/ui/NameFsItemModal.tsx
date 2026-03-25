@@ -13,20 +13,26 @@ import {
   textInput,
 } from "./fileSystemStyles";
 
-export type CreateFsItemKind = "folder" | "file";
+export type NameModalMode =
+  | { action: "create"; kind: "folder" | "file" }
+  | { action: "rename"; nodeId: string };
 
 type FormValues = { name: string };
 
 type Props = {
   open: boolean;
-  kind: CreateFsItemKind;
+  mode: NameModalMode;
   onClose: () => void;
 };
 
-export default function CreateFsItemModal({ open, kind, onClose }: Props) {
+export default function NameFsItemModal({ open, mode, onClose }: Props) {
   const { state, dispatch } = useFileSystem();
   const formId = useId();
   const dialogTitleId = useId();
+
+  const node =
+    mode.action === "rename" ? state.nodesById[mode.nodeId] : undefined;
+
   const {
     register,
     handleSubmit,
@@ -39,10 +45,49 @@ export default function CreateFsItemModal({ open, kind, onClose }: Props) {
   });
 
   useEffect(() => {
-    if (open) reset({ name: "" });
-  }, [open, kind, reset]);
+    if (!open) return;
+    if (mode.action === "rename" && node) {
+      reset({ name: node.name });
+    } else {
+      reset({ name: "" });
+    }
+  }, [open, mode, node, reset]);
 
-  const title = kind === "folder" ? "Add new folder" : "Add new file";
+  useEffect(() => {
+    if (open && mode.action === "rename" && !state.nodesById[mode.nodeId]) {
+      onClose();
+    }
+  }, [open, mode, state.nodesById, onClose]);
+
+  const handleDismiss = () => {
+    onClose();
+    reset({ name: "" });
+  };
+
+  const parentDirId =
+    mode.action === "rename" ? (node?.parentId ?? null) : state.currentDirId;
+
+  const excludeNodeId = mode.action === "rename" ? mode.nodeId : undefined;
+
+  const title =
+    mode.action === "create"
+      ? mode.kind === "folder"
+        ? "Add new folder"
+        : "Add new file"
+      : node?.type === "dir"
+        ? "Rename folder"
+        : "Rename file";
+
+  const placeholder =
+    mode.action === "create"
+      ? mode.kind === "folder"
+        ? "Folder name"
+        : "File name"
+      : node?.type === "dir"
+        ? "Folder name"
+        : "File name";
+
+  const submitLabel = mode.action === "create" ? "Create" : "Save";
 
   const onValid = (data: FormValues) => {
     const trimmed = data.name.trim();
@@ -51,11 +96,13 @@ export default function CreateFsItemModal({ open, kind, onClose }: Props) {
       return;
     }
     if (
+      parentDirId &&
       nameExistsAmongSiblings(
         state.nodesById,
         state.childrenByDirId,
-        state.currentDirId,
-        trimmed
+        parentDirId,
+        trimmed,
+        excludeNodeId,
       )
     ) {
       setError("name", {
@@ -63,27 +110,29 @@ export default function CreateFsItemModal({ open, kind, onClose }: Props) {
       });
       return;
     }
-    if (kind === "folder") {
-      dispatch({
-        type: "ADD_FOLDER",
-        parentDirId: state.currentDirId,
-        name: trimmed,
-      });
+
+    if (mode.action === "create") {
+      if (mode.kind === "folder") {
+        dispatch({
+          type: "ADD_FOLDER",
+          parentDirId: state.currentDirId,
+          name: trimmed,
+        });
+      } else {
+        dispatch({
+          type: "ADD_TEXT_FILE",
+          parentDirId: state.currentDirId,
+          name: trimmed,
+        });
+      }
     } else {
-      dispatch({
-        type: "ADD_TEXT_FILE",
-        parentDirId: state.currentDirId,
-        name: trimmed,
-      });
+      dispatch({ type: "RENAME_NODE", nodeId: mode.nodeId, newName: trimmed });
     }
-    onClose();
-    reset({ name: "" });
+
+    handleDismiss();
   };
 
-  const handleDismiss = () => {
-    onClose();
-    reset({ name: "" });
-  };
+  if (mode.action === "rename" && !node) return null;
 
   return (
     <Modal open={open} onClose={handleDismiss} aria-labelledby={dialogTitleId}>
@@ -104,12 +153,12 @@ export default function CreateFsItemModal({ open, kind, onClose }: Props) {
             id={`${formId}-name`}
             type="text"
             autoComplete="off"
+            autoFocus
             className={textInput}
-            placeholder={kind === "folder" ? "Folder name" : "File name"}
+            placeholder={placeholder}
             {...register("name", {
               required: "Name is required",
-              validate: (v) =>
-                v.trim().length > 0 || "Enter a name",
+              validate: (v) => v.trim().length > 0 || "Enter a name",
             })}
           />
           {errors.name ? (
@@ -134,7 +183,7 @@ export default function CreateFsItemModal({ open, kind, onClose }: Props) {
             disabled={isSubmitting}
             className={primaryButton}
           >
-            Create
+            {submitLabel}
           </button>
         </div>
       </Modal.Footer>

@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import AddDocumentIcon from "@/components/icons/AddDocumentIcon";
 import AddFolderIcon from "@/components/icons/AddFolderIcon";
 import PlusIcon from "@/components/icons/PlusIcon";
-import type { CreateFsItemKind } from "./CreateFsItemModal";
+type CreateFsItemKind = "folder" | "file";
 import { actionStackBase, mainFab, subFab } from "./fileSystemStyles";
 
 type Props = {
