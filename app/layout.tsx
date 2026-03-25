@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
+import GettingThemeScript from "@/components/GettingThemeScript";
+import { FileSystemProvider } from "@/components/filesystem/context/FileSystemProvider";
+import FileSystemInspectorPanel from "@/components/filesystem/ui/inspector";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +35,15 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <GettingThemeScript />
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <Header />
-        {children}
+        <FileSystemProvider>
+          <Header />
+          <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+            {children}
+            <FileSystemInspectorPanel />
+          </div>
+        </FileSystemProvider>
       </body>
     </html>
   );

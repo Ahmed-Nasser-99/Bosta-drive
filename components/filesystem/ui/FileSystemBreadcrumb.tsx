@@ -2,11 +2,11 @@
 
 import React from "react";
 import type { FSDirNode } from "../context/fileSystemTypes";
-import { useFileSystem } from "../context/FileSystemProvider";
+import { useNavigateToFolder } from "../useNavigateToFolder";
 import { breadcrumbNavButton } from "./fileSystemStyles";
 
 export default function FileSystemBreadcrumb({ path }: { path: FSDirNode[] }) {
-  const { dispatch } = useFileSystem();
+  const navigateToFolder = useNavigateToFolder();
 
   return (
     <nav className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
@@ -15,10 +15,14 @@ export default function FileSystemBreadcrumb({ path }: { path: FSDirNode[] }) {
           {idx > 0 ? <span aria-hidden="true">›</span> : null}
           <button
             type="button"
-            className={breadcrumbNavButton}
+            className={
+              breadcrumbNavButton +
+              " " +
+              (idx === path.length - 1 ? "font-semibold text-foreground" : "")
+            }
             onClick={(e) => {
               e.stopPropagation();
-              dispatch({ type: "NAVIGATE_TO_DIR", dirId: node.id });
+              navigateToFolder(node.id);
             }}
           >
             {node.name}

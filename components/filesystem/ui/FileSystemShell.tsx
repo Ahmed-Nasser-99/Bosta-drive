@@ -32,10 +32,7 @@ export default function FileSystemShell() {
   const isEmpty = dirs.length === 0 && files.length === 0;
 
   return (
-    <div
-      className="mx-auto w-full max-w-6xl flex-1 px-4 py-6"
-      onClick={() => dispatch({ type: "SELECT_NODE", nodeId: null })}
-    >
+    <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <FileSystemBreadcrumb path={path} />
         <div className="text-sm text-muted-foreground">

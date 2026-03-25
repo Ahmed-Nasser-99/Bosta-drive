@@ -40,7 +40,7 @@ export function FileSystemProvider({
 }) {
   const [state, dispatch] = useReducer(
     fileSystemReducer,
-    createInitialFileSystemState()
+    createInitialFileSystemState(),
   );
   const skipNextPersist = useRef(false);
 

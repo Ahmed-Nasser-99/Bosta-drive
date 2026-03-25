@@ -3,12 +3,14 @@
 import React from "react";
 import type { FSDirNode } from "../../context/fileSystemTypes";
 import { useFileSystem } from "../../context/FileSystemProvider";
+import { useNavigateToFolder } from "../../useNavigateToFolder";
 import { itemCardMeta, itemCardStack, itemCardTitle } from "../fileSystemStyles";
 import FileSystemItemCard from "./FileSystemItemCard";
 import FileSystemItemIcon from "./FileSystemItemIcon";
 
 export default function FileSystemDirCard({ dir }: { dir: FSDirNode }) {
   const { state, dispatch } = useFileSystem();
+  const navigateToFolder = useNavigateToFolder();
   const selected = state.selectedNodeId === dir.id;
   const childCount = state.childrenByDirId[dir.id]?.length ?? 0;
   const itemsLabel = childCount === 1 ? "1 item" : `${childCount} items`;
@@ -22,7 +24,7 @@ export default function FileSystemDirCard({ dir }: { dir: FSDirNode }) {
       }}
       onDoubleClick={(e) => {
         e.stopPropagation();
-        dispatch({ type: "NAVIGATE_TO_DIR", dirId: dir.id });
+        navigateToFolder(dir.id);
       }}
     >
       <div className={itemCardStack}>

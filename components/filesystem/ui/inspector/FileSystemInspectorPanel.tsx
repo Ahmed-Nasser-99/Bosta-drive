@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { useFileSystem } from "../../context/FileSystemProvider";
+import { useNavigateToFolder } from "../../useNavigateToFolder";
 import { buildNodeDisplayPath, countDirContents } from "../../utils";
 import DeleteFsItemConfirmModal from "./DeleteFsItemConfirmModal";
 import InspectorActionBar from "./InspectorActionBar";
@@ -15,6 +16,7 @@ import RenameFsItemModal from "./RenameFsItemModal";
 
 export default function FileSystemInspectorPanel() {
   const { state, dispatch } = useFileSystem();
+  const navigateToFolder = useNavigateToFolder();
   const [renameId, setRenameId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -40,7 +42,7 @@ export default function FileSystemInspectorPanel() {
   const handleOpen = () => {
     if (!selected) return;
     if (selected.type === "dir") {
-      dispatch({ type: "NAVIGATE_TO_DIR", dirId: selected.id });
+      navigateToFolder(selected.id);
     } else {
       dispatch({ type: "OPEN_TEXT_EDITOR", nodeId: selected.id });
     }

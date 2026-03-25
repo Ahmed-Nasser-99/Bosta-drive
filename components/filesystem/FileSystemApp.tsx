@@ -1,18 +1,24 @@
 "use client";
 
-import { FileSystemProvider } from "./context/FileSystemProvider";
-import FileSystemInspectorPanel from "./ui/inspector";
+import FolderRouteSync from "./FolderRouteSync";
 import FileSystemShell from "./ui/FileSystemShell";
+import FileSystemInspectorPanel from "./ui/inspector";
+import { useFileSystem } from "./context/FileSystemProvider";
 
-export default function FileSystemApp() {
+function FileSystemApp() {
+  const { dispatch } = useFileSystem();
+
   return (
-    <FileSystemProvider>
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <div className="min-h-0 min-w-0 flex-1 overflow-auto">
-          <FileSystemShell />
-        </div>
-        <FileSystemInspectorPanel />
+    <>
+      <FolderRouteSync />
+      <div
+        className="flex min-h-0 flex-1 flex-col lg:flex-row"
+        onClick={() => dispatch({ type: "SELECT_NODE", nodeId: null })}
+      >
+        <FileSystemShell />
       </div>
-    </FileSystemProvider>
+    </>
   );
 }
+
+export default FileSystemApp;
