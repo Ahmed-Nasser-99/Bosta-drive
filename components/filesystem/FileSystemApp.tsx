@@ -2,7 +2,6 @@
 
 import FolderRouteSync from "./FolderRouteSync";
 import FileSystemShell from "./ui/FileSystemShell";
-import FileSystemInspectorPanel from "./ui/inspector";
 import { useFileSystem } from "./context/FileSystemProvider";
 
 function FileSystemApp() {

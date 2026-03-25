@@ -7,6 +7,8 @@ export type ContextMenuItem = {
   icon: React.ReactNode;
   onClick: () => void;
   danger?: boolean;
+  /** Extra classes on the <li>, e.g. "lg:hidden" for mobile-only items. */
+  className?: string;
 };
 
 type Props = {
@@ -33,7 +35,7 @@ export default function ContextMenuPopup({
       onContextMenu={(e) => e.preventDefault()}
     >
       {items.map((item) => (
-        <li key={item.label} role="none">
+        <li key={item.label} role="none" className={item.className}>
           <button
             type="button"
             role="menuitem"

@@ -8,7 +8,12 @@ import { itemCardMeta, itemCardStack, itemCardTitle } from "../fileSystemStyles"
 import FileSystemItemCard from "./FileSystemItemCard";
 import FileSystemItemIcon from "./FileSystemItemIcon";
 
-export default function FileSystemDirCard({ dir }: { dir: FSDirNode }) {
+type Props = {
+  dir: FSDirNode;
+  onMenuOpen: (nodeId: string, anchor: HTMLElement) => void;
+};
+
+export default function FileSystemDirCard({ dir, onMenuOpen }: Props) {
   const { state, dispatch } = useFileSystem();
   const navigateToFolder = useNavigateToFolder();
   const selected = state.selectedNodeId === dir.id;
@@ -27,6 +32,7 @@ export default function FileSystemDirCard({ dir }: { dir: FSDirNode }) {
         e.stopPropagation();
         navigateToFolder(dir.id);
       }}
+      onMenuOpen={onMenuOpen}
     >
       <div className={itemCardStack}>
         <FileSystemItemIcon kind="dir" />

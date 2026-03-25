@@ -8,7 +8,12 @@ import { itemCardMeta, itemCardStack, itemCardTitle } from "../fileSystemStyles"
 import FileSystemItemCard from "./FileSystemItemCard";
 import FileSystemItemIcon from "./FileSystemItemIcon";
 
-export default function FileSystemFileCard({ file }: { file: FSFileNode }) {
+type Props = {
+  file: FSFileNode;
+  onMenuOpen: (nodeId: string, anchor: HTMLElement) => void;
+};
+
+export default function FileSystemFileCard({ file, onMenuOpen }: Props) {
   const { state, dispatch } = useFileSystem();
   const selected = state.selectedNodeId === file.id;
 
@@ -24,6 +29,7 @@ export default function FileSystemFileCard({ file }: { file: FSFileNode }) {
         e.stopPropagation();
         dispatch({ type: "OPEN_TEXT_EDITOR", nodeId: file.id });
       }}
+      onMenuOpen={onMenuOpen}
     >
       <div className={itemCardStack}>
         <FileSystemItemIcon kind="file" />

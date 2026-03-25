@@ -5,6 +5,7 @@ import AddDocumentIcon from "@/components/icons/AddDocumentIcon";
 import AddFolderIcon from "@/components/icons/AddFolderIcon";
 import FolderIcon from "@/components/icons/FolderIcon";
 import FileIcon from "@/components/icons/FileIcon";
+import InfoIcon from "@/components/icons/InfoIcon";
 import RenameIcon from "@/components/icons/RenameIcon";
 import TrashIcon from "@/components/icons/TrashIcon";
 import { useFileSystem } from "../context/FileSystemProvider";
@@ -22,7 +23,7 @@ import {
   type ContextMenuItem,
 } from "./context-menu";
 import CreateItemFab from "./CreateItemFab";
-import { DeleteFsItemConfirmModal } from "./inspector";
+import { DeleteFsItemConfirmModal, InspectorModal } from "./inspector";
 import FileSystemBreadcrumb from "./FileSystemBreadcrumb";
 import FileSystemEmptyState from "./FileSystemEmptyState";
 import { sectionLabel } from "./fileSystemStyles";
@@ -34,7 +35,7 @@ const CREATE_FOLDER: NameModalMode = { action: "create", kind: "folder" };
 const CREATE_FILE: NameModalMode = { action: "create", kind: "file" };
 
 function buildBackgroundMenuItems(
-  setNameModal: (mode: NameModalMode) => void,
+  setNameModal: (mode: NameModalMode) => void
 ): ContextMenuItem[] {
   return [
     {
@@ -56,6 +57,7 @@ function buildNodeMenuItems(
   dispatch: Dispatch<FileSystemAction>,
   setNameModal: (mode: NameModalMode) => void,
   setDeleteId: (id: string) => void,
+  setDetailsId: (id: string) => void
 ): ContextMenuItem[] {
   return [
     {
@@ -73,6 +75,12 @@ function buildNodeMenuItems(
           dispatch({ type: "OPEN_TEXT_EDITOR", nodeId: node.id });
         }
       },
+    },
+    {
+      label: "Details",
+      icon: <InfoIcon className="h-4 w-4" />,
+      onClick: () => setDetailsId(node.id),
+      className: "lg:hidden",
     },
     {
       label: "Rename",
@@ -93,12 +101,13 @@ export default function FileSystemShell() {
   const navigateToFolder = useNavigateToFolder();
   const [nameModal, setNameModal] = useState<NameModalMode | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [detailsId, setDetailsId] = useState<string | null>(null);
 
   const { menu, openMenu, closeMenu, popupRef } = useContextMenu();
 
   const path = useMemo(
     () => buildDirPath(state.nodesById, state.currentDirId),
-    [state.nodesById, state.currentDirId],
+    [state.nodesById, state.currentDirId]
   );
 
   const ids = state.childrenByDirId[state.currentDirId] ?? [];
@@ -114,7 +123,7 @@ export default function FileSystemShell() {
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
       const nodeEl = (e.target as HTMLElement).closest<HTMLElement>(
-        "[data-node-id]",
+        "[data-node-id]"
       );
       if (nodeEl) {
         const nodeId = nodeEl.getAttribute("data-node-id")!;
@@ -124,7 +133,22 @@ export default function FileSystemShell() {
         openMenu(e, { kind: "background" });
       }
     },
-    [openMenu, dispatch],
+    [openMenu, dispatch]
+  );
+
+  const handleCardMenuOpen = useCallback(
+    (nodeId: string, anchor: HTMLElement) => {
+      dispatch({ type: "SELECT_NODE", nodeId });
+      const rect = anchor.getBoundingClientRect();
+      const syntheticEvent = {
+        preventDefault: () => {},
+        stopPropagation: () => {},
+        clientX: rect.right,
+        clientY: rect.bottom,
+      } as React.MouseEvent;
+      openMenu(syntheticEvent, { kind: "item", nodeId });
+    },
+    [openMenu, dispatch]
   );
 
   const contextMenuItems = useMemo((): ContextMenuItem[] => {
@@ -143,6 +167,7 @@ export default function FileSystemShell() {
       dispatch,
       setNameModal,
       setDeleteId,
+      setDetailsId
     );
   }, [menu, state.nodesById, navigateToFolder, dispatch]);
 
@@ -171,7 +196,11 @@ export default function FileSystemShell() {
               <div className={sectionLabel}>Directories</div>
               <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
                 {dirs.map((dir) => (
-                  <FileSystemDirCard key={dir.id} dir={dir} />
+                  <FileSystemDirCard
+                    key={dir.id}
+                    dir={dir}
+                    onMenuOpen={handleCardMenuOpen}
+                  />
                 ))}
               </div>
             </div>
@@ -182,7 +211,11 @@ export default function FileSystemShell() {
               <div className={sectionLabel}>Files</div>
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {files.map((file) => (
-                  <FileSystemFileCard key={file.id} file={file} />
+                  <FileSystemFileCard
+                    key={file.id}
+                    file={file}
+                    onMenuOpen={handleCardMenuOpen}
+                  />
                 ))}
               </div>
             </div>
@@ -210,6 +243,11 @@ export default function FileSystemShell() {
         open={deleteId !== null}
         nodeId={deleteId}
         onClose={() => setDeleteId(null)}
+      />
+      <InspectorModal
+        open={detailsId !== null}
+        nodeId={detailsId}
+        onClose={() => setDetailsId(null)}
       />
     </div>
   );
