@@ -32,6 +32,7 @@ import FileSystemBreadcrumb from "./FileSystemBreadcrumb";
 import FileSystemEmptyState from "./FileSystemEmptyState";
 import { sectionLabel } from "./fileSystemStyles";
 import { FileSystemDirCard, FileSystemFileCard } from "./item-card";
+import { DND_NODE_TYPE } from "./item-card/FileSystemItemCard";
 import NameFsItemModal, { type NameModalMode } from "./NameFsItemModal";
 import TextFileEditorModal from "./TextFileEditorModal";
 
@@ -147,6 +148,7 @@ export default function FileSystemShell() {
   const [nameModal, setNameModal] = useState<NameModalMode | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [detailsId, setDetailsId] = useState<string | null>(null);
+  const [bgDragOver, setBgDragOver] = useState(false);
 
   const { menu, openMenu, closeMenu, popupRef } = useContextMenu();
 
@@ -220,6 +222,47 @@ export default function FileSystemShell() {
     [clipboard, dispatch, clearClipboard],
   );
 
+  const handleShellDragOver = useCallback((e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes(DND_NODE_TYPE)) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+    }
+  }, []);
+
+  const handleShellDragEnter = useCallback((e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes(DND_NODE_TYPE)) {
+      e.preventDefault();
+      setBgDragOver(true);
+    }
+  }, []);
+
+  const handleShellDragLeave = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+        setBgDragOver(false);
+      }
+    },
+    [],
+  );
+
+  const handleShellDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setBgDragOver(false);
+      const draggedId = e.dataTransfer.getData(DND_NODE_TYPE);
+      if (!draggedId) return;
+      const node = state.nodesById[draggedId];
+      if (!node || node.parentId === state.currentDirId) return;
+      dispatch({
+        type: "PASTE_NODES",
+        op: "cut",
+        nodeIds: [draggedId],
+        targetDirId: state.currentDirId,
+      });
+    },
+    [state.nodesById, state.currentDirId, dispatch],
+  );
+
   const contextMenuItems = useMemo((): ContextMenuItem[] => {
     if (!menu.open) return [];
 
@@ -261,8 +304,12 @@ export default function FileSystemShell() {
 
   return (
     <div
-      className="mx-auto w-full max-w-6xl flex-1 px-4 py-6"
+      className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 transition ${bgDragOver ? "rounded-2xl ring-2 ring-primary ring-offset-2 ring-offset-surface" : ""}`}
       onContextMenu={handleContextMenu}
+      onDragOver={handleShellDragOver}
+      onDragEnter={handleShellDragEnter}
+      onDragLeave={handleShellDragLeave}
+      onDrop={handleShellDrop}
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <FileSystemBreadcrumb path={path} />

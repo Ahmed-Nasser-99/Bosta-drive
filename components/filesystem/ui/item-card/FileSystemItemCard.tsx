@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import EllipsisVerticalIcon from "@/components/icons/EllipsisVerticalIcon";
 import { focusRing } from "@/components/ui/styles";
 import { itemCardClassName } from "../fileSystemStyles";
 import { useFileSystem } from "../../context/FileSystemProvider";
+
+// a custom data type for the drag and drop operation
+export const DND_NODE_TYPE = "application/x-bosta-drive-node";
 
 const DOUBLE_TAP_MS = 350;
 
@@ -27,7 +30,8 @@ export default function FileSystemItemCard({
 }: Props) {
   const lastTapRef = useRef(0);
   const { clipboard } = useFileSystem();
-  const isCut = clipboard?.nodeIds.includes(nodeId);
+  const isCut = clipboard?.op === "cut" && clipboard.nodeIds.includes(nodeId);
+  const [dragging, setDragging] = useState(false);
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -52,10 +56,26 @@ export default function FileSystemItemCard({
     [nodeId, onMenuOpen],
   );
 
+  const handleDragStart = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.dataTransfer.setData(DND_NODE_TYPE, nodeId);
+      e.dataTransfer.effectAllowed = "move";
+      setDragging(true);
+    },
+    [nodeId],
+  );
+
+  const handleDragEnd = useCallback(() => {
+    setDragging(false);
+  }, []);
+
   return (
     <div
-      className={`group/card relative${isCut ? " opacity-50" : ""}`}
+      className={`group/card relative transition-opacity${isCut || dragging ? " opacity-50" : ""}`}
       data-node-id={nodeId}
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
       <button
         type="button"
@@ -66,7 +86,11 @@ export default function FileSystemItemCard({
       </button>
       <button
         type="button"
-        className={`absolute right-1.5 top-1.5 inline-flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10 ${focusRing} `}
+        className={`absolute right-1.5 top-1.5 inline-flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10 ${focusRing} ${
+          selected
+            ? "opacity-100"
+            : "opacity-0 focus:opacity-100 group-hover/card:opacity-100"
+        }`}
         aria-label="More actions"
         tabIndex={0}
         onClick={handleMenuClick}
