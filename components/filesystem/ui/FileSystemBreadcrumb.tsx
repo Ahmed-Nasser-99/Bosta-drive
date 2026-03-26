@@ -17,7 +17,7 @@ export default function FileSystemBreadcrumb({ path }: { path: FSDirNode[] }) {
             type="button"
             className={
               breadcrumbNavButton +
-              " " +
+              " cursor-pointer " +
               (idx === path.length - 1 ? "font-semibold text-foreground" : "")
             }
             onClick={(e) => {

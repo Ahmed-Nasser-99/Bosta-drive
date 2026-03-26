@@ -32,9 +32,15 @@ export default function FileSystemItemCard({
   const { clipboard } = useFileSystem();
   const isCut = clipboard?.op === "cut" && clipboard.nodeIds.includes(nodeId);
   const [dragging, setDragging] = useState(false);
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (isMobile) {
+        onDoubleClick?.(e);
+        return;
+      }
+
       const now = Date.now();
       if (onDoubleClick && now - lastTapRef.current < DOUBLE_TAP_MS) {
         lastTapRef.current = 0;

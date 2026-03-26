@@ -51,7 +51,7 @@ export default function ThemeToggle() {
       type="button"
       onClick={toggle}
       suppressHydrationWarning
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface-2 text-foreground transition hover:bg-surface"
+      className="flex shrink-0 h-9 w-9 items-center justify-center rounded-full border border-border bg-surface-2 text-foreground transition hover:bg-surface"
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
     >
       {dark ? <SunIcon /> : <MoonIcon />}
