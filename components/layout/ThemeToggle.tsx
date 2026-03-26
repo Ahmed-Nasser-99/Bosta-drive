@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import SunIcon from "../icons/SunIcon";
 import MoonIcon from "../icons/MoonIcon";
+import { useFileSystem } from "../filesystem/context/FileSystemProvider";
+import { shimmer } from "@/components/ui/styles";
 
 const STORAGE_KEY = "bosta_drive_theme";
 
@@ -23,6 +25,7 @@ function subscribe(onStoreChange: () => void) {
 }
 
 export default function ThemeToggle() {
+  const { hydrated } = useFileSystem();
   const dark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
@@ -35,6 +38,13 @@ export default function ThemeToggle() {
     document.documentElement.classList.toggle("dark", next);
     window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEY }));
   }, []);
+
+  if (!hydrated)
+    return (
+      <div
+        className={`h-9 w-9 rounded-full border border-border bg-surface-2 ${shimmer}`}
+      />
+    );
 
   return (
     <button

@@ -2,10 +2,13 @@
 
 import FolderRouteSync from "./FolderRouteSync";
 import FileSystemShell from "./ui/FileSystemShell";
+import FileSystemSkeleton from "./ui/FileSystemSkeleton";
 import { useFileSystem } from "./context/FileSystemProvider";
 
 function FileSystemApp() {
-  const { dispatch } = useFileSystem();
+  const { dispatch, hydrated } = useFileSystem();
+
+  if (!hydrated) return <FileSystemSkeleton />;
 
   return (
     <>

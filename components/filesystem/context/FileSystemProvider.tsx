@@ -8,6 +8,7 @@ import React, {
   useReducer,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import type {
   Clipboard,
@@ -27,6 +28,7 @@ type CtxValue = {
   clipboard: Clipboard;
   setClipboard: (nodeIds: string[], op: ClipboardOp) => void;
   clearClipboard: () => void;
+  hydrated: boolean;
 };
 
 const FileSystemContext = createContext<CtxValue | null>(null);
@@ -55,6 +57,15 @@ export function FileSystemProvider({
   const [clipboard, setClipboardRaw] = useState<Clipboard>(null);
   const skipNextPersist = useRef(false);
 
+  const hydratedRef = useRef(false);
+  const hydratedListeners = useRef(new Set<() => void>());
+  const subscribeHydrated = useCallback((cb: () => void) => {
+    hydratedListeners.current.add(cb);
+    return () => { hydratedListeners.current.delete(cb); };
+  }, []);
+  const getHydrated = useCallback(() => hydratedRef.current, []);
+  const hydrated = useSyncExternalStore(subscribeHydrated, getHydrated, () => false);
+
   const setClipboard = useCallback(
     (nodeIds: string[], op: ClipboardOp) =>
       setClipboardRaw({ op, nodeIds }),
@@ -69,6 +80,8 @@ export function FileSystemProvider({
       skipNextPersist.current = true;
       dispatch({ type: "HYDRATE_STATE", state: parsed });
     }
+    hydratedRef.current = true;
+    for (const cb of hydratedListeners.current) cb();
   }, []);
 
   useEffect(() => {
@@ -80,7 +93,7 @@ export function FileSystemProvider({
   }, [state]);
 
   return (
-    <FileSystemContext.Provider value={{ state, dispatch, clipboard, setClipboard, clearClipboard }}>
+    <FileSystemContext.Provider value={{ state, dispatch, clipboard, setClipboard, clearClipboard, hydrated }}>
       {children}
     </FileSystemContext.Provider>
   );
