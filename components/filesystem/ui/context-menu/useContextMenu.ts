@@ -24,13 +24,11 @@ export function useContextMenu() {
   const [menu, setMenu] = useState<ContextMenuState>(CLOSED);
   const popupRef = useRef<HTMLUListElement | null>(null);
 
-  const openMenu = useCallback(
-    (e: React.MouseEvent, target: ContextMenuTarget) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setMenu({ open: true, x: e.clientX, y: e.clientY, target });
+  const openMenuAt = useCallback(
+    (x: number, y: number, target: ContextMenuTarget) => {
+      setMenu({ open: true, x, y, target });
     },
-    []
+    [],
   );
 
   const closeMenu = useCallback(() => setMenu(CLOSED), []);
@@ -57,5 +55,5 @@ export function useContextMenu() {
     };
   }, [menu.open, closeMenu]);
 
-  return { menu, openMenu, closeMenu, popupRef };
+  return { menu, openMenuAt, closeMenu, popupRef };
 }

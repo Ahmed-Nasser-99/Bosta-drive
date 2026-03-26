@@ -86,11 +86,7 @@ export default function FileSystemItemCard({
       </button>
       <button
         type="button"
-        className={`absolute right-1.5 top-1.5 inline-flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10 ${focusRing} ${
-          selected
-            ? "opacity-100"
-            : "opacity-0 focus:opacity-100 group-hover/card:opacity-100"
-        }`}
+        className={`absolute right-1.5 top-1.5 inline-flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10 ${focusRing}`}
         aria-label="More actions"
         tabIndex={0}
         onClick={handleMenuClick}

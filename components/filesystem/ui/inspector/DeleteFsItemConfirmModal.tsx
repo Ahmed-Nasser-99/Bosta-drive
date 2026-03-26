@@ -10,12 +10,14 @@ type Props = {
   open: boolean;
   nodeId: string | null;
   onClose: () => void;
+  onCloseInspector?: () => void;
 };
 
 export default function DeleteFsItemConfirmModal({
   open,
   nodeId,
   onClose,
+  onCloseInspector,
 }: Props) {
   const { state, dispatch } = useFileSystem();
   const dialogTitleId = useId();
@@ -29,6 +31,7 @@ export default function DeleteFsItemConfirmModal({
     if (!nodeId || !node || nodeId === state.rootId) return;
     dispatch({ type: "DELETE_NODE", nodeId });
     onClose();
+    onCloseInspector();
   };
 
   if (!node) return null;
@@ -54,13 +57,12 @@ export default function DeleteFsItemConfirmModal({
       <Modal.Body>
         <p className="text-sm text-foreground">
           You are about to delete{" "}
-          <span className="font-semibold break-all">{node.name}</span>.
-          {extra}
+          <span className="font-semibold break-all">{node.name}</span>.{extra}
         </p>
         <p className="mt-3 text-sm text-muted-foreground">
           This action is not reversible. Your data will be removed from this
-          browser only (local mock storage), but you will not be able to undo
-          it here.
+          browser only (local mock storage), but you will not be able to undo it
+          here.
         </p>
       </Modal.Body>
       <Modal.Footer>

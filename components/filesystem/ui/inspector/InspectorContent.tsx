@@ -102,6 +102,7 @@ export default function InspectorContent({ nodeId, onAfterAction }: Props) {
         open={deleteId !== null}
         nodeId={deleteId}
         onClose={() => setDeleteId(null)}
+        onCloseInspector={onAfterAction}
       />
     </>
   );

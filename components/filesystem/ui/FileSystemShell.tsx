@@ -23,8 +23,9 @@ import { useNavigateToFolder } from "../useNavigateToFolder";
 import { buildDirPath } from "../utils";
 import {
   ContextMenuPopup,
-  useContextMenu,
   type ContextMenuItem,
+  type ContextMenuState,
+  type ContextMenuTarget,
 } from "./context-menu";
 import CreateItemFab from "./CreateItemFab";
 import { DeleteFsItemConfirmModal, InspectorModal } from "./inspector";
@@ -141,7 +142,19 @@ function buildNodeMenuItems(
   return items;
 }
 
-export default function FileSystemShell() {
+type Props = {
+  menu: ContextMenuState;
+  openMenuAt: (x: number, y: number, target: ContextMenuTarget) => void;
+  closeMenu: () => void;
+  popupRef: React.RefObject<HTMLUListElement | null>;
+};
+
+export default function FileSystemShell({
+  menu,
+  openMenuAt,
+  closeMenu,
+  popupRef,
+}: Props) {
   const { state, dispatch, clipboard, setClipboard, clearClipboard } =
     useFileSystem();
   const navigateToFolder = useNavigateToFolder();
@@ -149,8 +162,6 @@ export default function FileSystemShell() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [detailsId, setDetailsId] = useState<string | null>(null);
   const [bgDragOver, setBgDragOver] = useState(false);
-
-  const { menu, openMenu, closeMenu, popupRef } = useContextMenu();
 
   const path = useMemo(
     () => buildDirPath(state.nodesById, state.currentDirId),
@@ -167,35 +178,13 @@ export default function FileSystemShell() {
 
   const isEmpty = dirs.length === 0 && files.length === 0;
 
-  const handleContextMenu = useCallback(
-    (e: React.MouseEvent) => {
-      const nodeEl = (e.target as HTMLElement).closest<HTMLElement>(
-        "[data-node-id]",
-      );
-      if (nodeEl) {
-        const nodeId = nodeEl.getAttribute("data-node-id")!;
-        dispatch({ type: "SELECT_NODE", nodeId });
-        openMenu(e, { kind: "item", nodeId });
-      } else {
-        openMenu(e, { kind: "background" });
-      }
-    },
-    [openMenu, dispatch],
-  );
-
   const handleCardMenuOpen = useCallback(
     (nodeId: string, anchor: HTMLElement) => {
       dispatch({ type: "SELECT_NODE", nodeId });
       const rect = anchor.getBoundingClientRect();
-      const syntheticEvent = {
-        preventDefault: () => {},
-        stopPropagation: () => {},
-        clientX: rect.right,
-        clientY: rect.bottom,
-      } as React.MouseEvent;
-      openMenu(syntheticEvent, { kind: "item", nodeId });
+      openMenuAt(rect.right, rect.bottom, { kind: "item", nodeId });
     },
-    [openMenu, dispatch],
+    [openMenuAt, dispatch],
   );
 
   const handleCopy = useCallback(
@@ -305,7 +294,6 @@ export default function FileSystemShell() {
   return (
     <div
       className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 transition ${bgDragOver ? "rounded-2xl ring-2 ring-primary ring-offset-2 ring-offset-surface" : ""}`}
-      onContextMenu={handleContextMenu}
       onDragOver={handleShellDragOver}
       onDragEnter={handleShellDragEnter}
       onDragLeave={handleShellDragLeave}
