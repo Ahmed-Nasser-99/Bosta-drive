@@ -37,18 +37,40 @@ export function nameExistsAmongSiblings(
   });
 }
 
+/**
+ * Starting from `nodeId`, traverse up the tree via `parentId` pointers until
+ * the root (parentId === null) is reached. Each visited node is prepended to
+ * the result so the returned array is ordered root-first, target-last.
+ *
+ * Used as the foundation for both display-path strings and breadcrumb chains.
+ */
+export function buildAncestorChain(
+  nodesById: Record<string, FSNode>,
+  nodeId: string
+): FSNode[] {
+  const chain: FSNode[] = [];
+  let cur: FSNode | undefined = nodesById[nodeId];
+  while (cur) {
+    chain.unshift(cur);
+    if (!cur.parentId) break;
+    cur = nodesById[cur.parentId];
+  }
+  return chain;
+}
+
+/**
+ * Build a human-readable absolute path string for any node.
+ * e.g. "/My Computer/Documents/report.txt"
+ *
+ * Walks the ancestor chain and joins each node's name with "/".
+ * Returns "—" when the node doesn't exist.
+ */
 export function buildNodeDisplayPath(
   nodesById: Record<string, FSNode>,
   nodeId: string
 ): string {
-  const names: string[] = [];
-  let cur: FSNode | undefined = nodesById[nodeId];
-  while (cur) {
-    names.unshift(cur.name);
-    if (!cur.parentId) break;
-    cur = nodesById[cur.parentId];
-  }
-  return names.length > 0 ? `/${names.join("/")}` : "—";
+  const chain = buildAncestorChain(nodesById, nodeId);
+  return chain.length > 0 ? `/${chain.map((n) => n.name).join("/")}` : "—";
 }
 
 export function countDirContents(
@@ -112,19 +134,13 @@ export function resolveCurrentDirAfterDelete(
   return cur;
 }
 
-export function buildDirPath(nodesById: Record<string, FSNode>, dirId: string) {
-  const path: FSDirNode[] = [];
-  let cur: FSDirNode | undefined =
-    nodesById[dirId] && nodesById[dirId].type === "dir"
-      ? (nodesById[dirId] as FSDirNode)
-      : undefined;
-
-  while (cur) {
-    path.unshift(cur);
-    if (!cur.parentId) break;
-    const parent = nodesById[cur.parentId];
-    cur = parent && parent.type === "dir" ? (parent as FSDirNode) : undefined;
-  }
-
-  return path;
+/**
+ * Build the breadcrumb chain for a directory — an array of `FSDirNode` objects
+ * from the root down to `dirId`. Non-dir nodes (shouldn't happen in practice)
+ * are filtered out so the result is always a clean folder path.
+ */
+export function buildDirPath(nodesById: Record<string, FSNode>, dirId: string): FSDirNode[] {
+  return buildAncestorChain(nodesById, dirId).filter(
+    (n): n is FSDirNode => n.type === "dir"
+  );
 }

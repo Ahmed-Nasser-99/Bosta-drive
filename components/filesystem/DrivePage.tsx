@@ -1,6 +1,5 @@
 import React from "react";
 import FileSystemApp from "./FileSystemApp";
-import { FileSystemProvider } from "./context/FileSystemProvider";
 
 const DrivePage = () => {
   return (

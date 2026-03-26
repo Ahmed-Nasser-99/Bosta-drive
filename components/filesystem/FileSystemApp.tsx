@@ -11,15 +11,13 @@ function FileSystemApp() {
   if (!hydrated) return <FileSystemSkeleton />;
 
   return (
-    <>
+    <div
+      className="min-h-0 flex-1 overflow-auto"
+      onClick={() => dispatch({ type: "SELECT_NODE", nodeId: null })}
+    >
       <FolderRouteSync />
-      <div
-        className="flex min-h-0 flex-1 flex-col lg:flex-row"
-        onClick={() => dispatch({ type: "SELECT_NODE", nodeId: null })}
-      >
-        <FileSystemShell />
-      </div>
-    </>
+      <FileSystemShell />
+    </div>
   );
 }
 
