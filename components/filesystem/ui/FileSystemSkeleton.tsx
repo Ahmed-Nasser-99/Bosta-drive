@@ -39,22 +39,6 @@ export default function FileSystemSkeleton() {
           </div>
         </div>
       </div>
-
-      {/* Inspector Panel Skeleton */}
-      <div className="hidden w-80 shrink-0 flex-col overflow-y-auto border-t border-border bg-surface lg:flex lg:border-l lg:border-t-0 p-4">
-        {/* Preview aspect ratio block */}
-        <div
-          className={`mb-4 aspect-video w-full rounded-xl border border-border bg-base ${shimmer}`}
-        ></div>
-        {/* Title */}
-        <div className={`mb-6 h-6 w-3/4 rounded bg-muted ${shimmer}`}></div>
-        {/* Details tags */}
-        <div className="space-y-3">
-          <div className={`h-4 w-1/2 rounded bg-muted ${shimmer}`}></div>
-          <div className={`h-4 w-full rounded bg-muted ${shimmer}`}></div>
-          <div className={`h-4 w-2/3 rounded bg-muted ${shimmer}`}></div>
-        </div>
-      </div>
     </div>
   );
 }
