@@ -31,7 +31,7 @@ export default function SearchBar() {
         dispatch({ type: "OPEN_TEXT_EDITOR", nodeId });
       }
     },
-    [clear, navigateToFolder, dispatch]
+    [clear, navigateToFolder, dispatch],
   );
 
   useEffect(() => {

@@ -6,7 +6,7 @@ import Image from "next/image";
 const Header = () => {
   return (
     <header className="w-full border-b border-border bg-surface">
-      <div className="flex items-center gap-10 mx-auto justify-between px-4 py-3 w-full">
+      <div className="flex items-center md:gap-10 gap-2 mx-auto justify-between px-2 md:px-4 py-3 w-full">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center relative">
             <Image src="/logo.png" alt="Bosta Drive" fill />

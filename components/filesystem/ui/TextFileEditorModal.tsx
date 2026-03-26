@@ -84,7 +84,11 @@ function EditorInner({
       </Modal.Body>
       <Modal.Footer>
         <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" className={secondaryButton} onClick={handleClose}>
+          <button
+            type="button"
+            className={secondaryButton}
+            onClick={handleClose}
+          >
             Cancel
           </button>
           <button
@@ -114,5 +118,7 @@ export default function TextFileEditorModal() {
 
   if (!state.editor.open || !fileNode) return null;
 
-  return <EditorInner key={fileNode.id} fileNode={fileNode} dispatch={dispatch} />;
+  return (
+    <EditorInner key={fileNode.id} fileNode={fileNode} dispatch={dispatch} />
+  );
 }
